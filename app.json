@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "ServSetu",
+    "slug": "servsetu-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/logo.jpeg",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./public/logo.jpeg",
+      "resizeMode": "contain",
+      "backgroundColor": "#16324F"
+    },
+    "assetBundlePatterns": ["**/*"]
+  }
+}
