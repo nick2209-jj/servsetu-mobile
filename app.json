@@ -4,13 +4,19 @@
     "slug": "servsetu-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./public/logo.jpeg",
+    "icon": "./public/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./public/logo.jpeg",
+      "image": "./public/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#16324F"
     },
-    "assetBundlePatterns": ["**/*"]
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
   }
 }
