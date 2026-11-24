@@ -1,0 +1,17 @@
+export const C = {
+  navy: '#16324F',
+  navyDark: '#0C2238',
+  teal: '#159A94',
+  tealLight: '#DDF4F0',
+  orange: '#F4A340',
+  orangeLight: '#FFF1D9',
+  ink: '#17324B',
+  muted: '#718096',
+  line: '#E6EDF1',
+  paper: '#F7FAFB',
+  white: '#FFFFFF',
+  green: '#2E9B68',
+  greenLight: '#E4F5EC',
+  red: '#D96161',
+  redLight: '#FCEAEA',
+};
