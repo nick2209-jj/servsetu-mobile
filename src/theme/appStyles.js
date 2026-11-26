@@ -360,4 +360,23 @@ export const styles = StyleSheet.create({
   payoutSub: { color: C.muted, fontSize: 11, marginTop: 4, textAlign: 'center' },
   upiInput: { backgroundColor: C.white, borderRadius: 13, borderWidth: 1, borderColor: C.line, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 17 },
   upiName: { color: C.ink, fontSize: 13, fontWeight: '700' },
+
+  // Screens 1-4 spec additions
+  authHeaderCenter: { alignItems: 'center', paddingTop: 26, paddingBottom: 20 },
+  eyeBtn: { paddingLeft: 10 },
+  inlineVerify: { backgroundColor: C.tealLight, borderRadius: 9, paddingHorizontal: 10, paddingVertical: 9, marginLeft: 8 },
+  inlineVerifyText: { color: C.teal, fontSize: 10, fontWeight: '800' },
+  gpsBtn: { borderWidth: 1, borderStyle: 'dashed', borderColor: '#A8D9D3', backgroundColor: '#F4FCFB', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, marginBottom: 16 },
+  gpsBtnText: { color: C.teal, fontSize: 11, fontWeight: '800' },
+  otpBoxes: { flexDirection: 'row', gap: 9, marginBottom: 16 },
+  otpBox: { flex: 1, height: 52, borderRadius: 12, borderWidth: 1.5, borderColor: C.line, backgroundColor: '#FBFDFD', textAlign: 'center', fontSize: 18, fontWeight: '800', color: C.ink },
+  otpBoxActive: { borderColor: C.teal, backgroundColor: '#F0FAF9' },
+  tradeSelect: { height: 51, borderRadius: 12, borderWidth: 1, borderColor: C.line, backgroundColor: '#FBFDFD', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, marginBottom: 16 },
+  tradeSelectText: { color: C.ink, fontSize: 14 },
+  markRead: { color: C.teal, fontWeight: '800', fontSize: 12 },
+  notifReadDot: { width: 7, height: 7, borderRadius: 5, backgroundColor: C.teal },
+  cbRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6, marginBottom: 12 },
+  cbBox: { width: 21, height: 21, borderRadius: 6, borderWidth: 1.5, borderColor: '#A8B7C0', alignItems: 'center', justifyContent: 'center' },
+  cbBoxActive: { backgroundColor: C.teal, borderColor: C.teal },
+  footerCta: { paddingHorizontal: 20, paddingBottom: 14, paddingTop: 8, backgroundColor: C.white, borderTopWidth: 1, borderTopColor: C.line },
 });
