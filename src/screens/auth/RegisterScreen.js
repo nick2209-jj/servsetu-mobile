@@ -1,6 +1,7 @@
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { Button, Field, Header, RoleToggle } from '../../components';
+import { C } from '../../theme';
 import { styles } from '../../theme/appStyles';
 
 export default function RegisterScreen({ role, setRole, go }) {

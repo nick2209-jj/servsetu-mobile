@@ -1,1 +1,1 @@
-export { C } from './theme';
+export { C } from '../theme';
