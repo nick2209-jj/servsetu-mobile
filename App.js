@@ -14,8 +14,8 @@ import BookingsScreen from './src/screens/customer/BookingsScreen';
 import BookingDetails from './src/screens/customer/BookingDetails';
 import PaymentScreen from './src/screens/customer/PaymentScreen';
 import CustomerNotifications from './src/screens/customer/NotificationsScreen';
+import NotificationPreferencesScreen from './src/screens/customer/NotificationPreferencesScreen';
 import AppliancesScreen from './src/screens/customer/AppliancesScreen';
-import TransactionsScreen from './src/screens/shared/TransactionsScreen';
 import ProfileScreen from './src/screens/shared/ProfileScreen';
 import SupportScreen from './src/screens/shared/SupportScreen';
 import SettingsScreen from './src/screens/shared/SettingsScreen';
@@ -35,14 +35,20 @@ const screens = {
   filters: (state) => <FiltersScreen go={state.go} />,
   technicianDetails: (state) => <TechnicianDetails go={state.go} />,
   bookingForm: (state) => <BookingForm go={state.go} />,
+  warrantyClaim: (state) => <BookingForm go={state.go} warrantyClaim />,
   bookings: (state) => <BookingsScreen go={state.go} />,
   bookingDetails: (state) => <BookingDetails go={state.go} />,
+  completedBookingDetails: (state) => <BookingDetails go={state.go} initialStatus="completed" />,
   payment: (state) => <PaymentScreen go={state.go} />,
-  notifications: (state) => <CustomerNotifications go={state.go} />,
+  notifications: (state) => <CustomerNotifications go={state.go} technician={state.role === 'technician'} />,
+  notificationPreferences: (state) => <NotificationPreferencesScreen go={state.go} />,
+  techNotifications: (state) => <NotificationPreferencesScreen go={state.go} backTarget="techSettings" supportTarget="techSupport" />,
   settings: (state) => <SettingsScreen go={state.go} />,
-  appliances: (state) => <AppliancesScreen go={state.go} view={state.params?.view || 'appliances'} />,
+  appliances: (state) => <AppliancesScreen go={state.go} view="appliances" />,
+  settingsAppliances: (state) => <AppliancesScreen go={state.go} view="appliances" fromSettings />,
   addresses: (state) => <AppliancesScreen go={state.go} view="addresses" />,
-  transactions: (state) => <TransactionsScreen go={state.go} />,
+  transactions: (state) => <AppliancesScreen go={state.go} view="transactions" />,
+  rateGuide: (state) => <AppliancesScreen go={state.go} view="support" />,
   profile: (state) => <ProfileScreen go={state.go} />,
   support: (state) => <SupportScreen go={state.go} />,
   techDashboard: (state) => <TechnicianDashboard go={state.go} />,
@@ -50,6 +56,8 @@ const screens = {
   services: (state) => <ServicesScreen go={state.go} />,
   earnings: (state) => <EarningsScreen go={state.go} />,
   techSettings: (state) => <SettingsScreen go={state.go} technician />,
+  techProfile: (state) => <ProfileScreen go={state.go} technician />,
+  techSupport: (state) => <SupportScreen go={state.go} backTarget="techSettings" />,
   workRules: (state) => <WorkRulesScreen go={state.go} />,
   payout: (state) => <PayoutScreen go={state.go} />,
 };

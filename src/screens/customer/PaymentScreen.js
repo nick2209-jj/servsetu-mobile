@@ -35,6 +35,7 @@ export default function PaymentScreen({ go }) {
   const [paid, setPaid] = useState(false);
 
   const onPay = () => {
+    if (!mode) return;
     if (mode === 'cash') { setShowPin(true); return; }
     setPaid(true);
   };
@@ -95,9 +96,15 @@ export default function PaymentScreen({ go }) {
           )}
         </Pressable>
 
-        <Pressable onPress={onPay} style={[styles.button, { marginTop: 8 }]}>
+        <Pressable
+          disabled={!mode || (mode === 'cash' && showPin)}
+          onPress={onPay}
+          style={[styles.button, { marginTop: 8 }, (!mode || (mode === 'cash' && showPin)) && styles.buttonDisabled]}
+        >
           <Text style={styles.buttonText}>
-            {mode === 'cash' ? (showPin ? 'Confirm Cash Handover' : 'Show Cash PIN') : `Pay ${TOTAL} Securely`}
+            {mode === 'cash'
+              ? (showPin ? 'Waiting for Technician Confirmation' : 'Show Cash PIN')
+              : mode === 'online' ? `Pay ${TOTAL} Securely` : 'Select a payment method'}
           </Text>
         </Pressable>
         <View style={styles.secureNote}>

@@ -11,10 +11,10 @@ const helpTopics = [
   ['Safety & trust', 'How ServSetu verifies every professional'],
 ];
 
-export default function SupportScreen({ go }) {
+export default function SupportScreen({ go, backTarget = 'settings' }) {
   return (
     <View style={styles.flex}>
-      <Header title="Support & rules" subtitle="Clear answers, helpful support" onBack={() => go('settings')} />
+      <Header title="Support & rules" subtitle="Clear answers, helpful support" onBack={() => go(backTarget)} />
       <ScrollView contentContainerStyle={styles.pagePadding}>
         <View style={styles.supportHero}>
           <Icon name="headset-outline" size={30} color={C.teal} />

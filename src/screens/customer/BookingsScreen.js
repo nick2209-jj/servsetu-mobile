@@ -16,6 +16,7 @@ const STATUS_COLORS = {
 };
 
 const activeBookings = [
+  { id: 'SRV-4077', title: 'AC compressor repair', cat: 'AC & Fridge', tech: 'Ramesh Patel', trade: 'Electrician · AC & Fridge', slot: 'Today, 1:00 – 3:00 PM', status: 'Completed', amount: '₹501 · Awaiting payment' },
   { id: 'SRV-4092', title: 'AC not cooling', cat: 'AC & Fridge', tech: 'Ramesh Patel', trade: 'Electrician · AC & Fridge', slot: 'Today, 4:00 – 6:00 PM', status: 'Quote Pending', amount: 'Quote received' },
   { id: 'SRV-4088', title: 'Kitchen tap leakage', cat: 'Plumbing', tech: 'Imran Shaikh', trade: 'Plumber · RO Purifier', slot: 'Tomorrow, 10:00 – 12:00 PM', status: 'Accepted', amount: 'Pending inspection' },
   { id: 'SRV-4081', title: 'Washing machine noise', cat: 'Washing Machine', tech: 'Mehul Parmar', trade: 'Washing Machine Specialist', slot: 'Today, 2:00 – 4:00 PM', status: 'In Progress', amount: '₹850 quoted' },
@@ -79,8 +80,11 @@ export default function BookingsScreen({ go }) {
             <Text style={[styles.segmentText, tab === 'past' && styles.segmentTextActive]}>Completed & Cancelled</Text>
           </Pressable>
         </View>
-        {(tab === 'active' ? activeBookings : pastBookings).map((b) => (
-          <BookingCard key={b.id} b={b} onPress={() => go('bookingDetails')} />
+        {(tab === 'active' ? [...activeBookings].sort((a, b) => {
+          const priority = { Completed: 0, 'Quote Pending': 1, 'Extra Charge Pending': 2 };
+          return (priority[a.status] ?? 3) - (priority[b.status] ?? 3);
+        }) : pastBookings).map((b) => (
+          <BookingCard key={b.id} b={b} onPress={() => go(b.status === 'Completed' ? 'completedBookingDetails' : 'bookingDetails')} />
         ))}
       </ScrollView>
     </MainLayout>

@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../../theme';
 import { categories, technicians } from '../../data/demo';
-import { IconButton, MainLayout } from '../../components';
+import { MainLayout } from '../../components';
 import { styles } from '../../theme/appStyles';
 
 const SORTS = ['Lowest Visiting Fee', 'Highest Rated', 'Nearest'];
@@ -54,13 +54,30 @@ export default function HomeScreen({ go }) {
 
   const feed = useMemo(() => {
     let list = [...technicians];
-    if (query) list = list.filter((t) => (t.name + t.trade).toLowerCase().includes(query.toLowerCase()));
+    if (query.trim()) {
+      const terms = query.toLowerCase().trim().split(/\s+/);
+      list = list.filter((t) => {
+        const searchable = `${t.name} ${t.trade} ${t.searchTerms || ''}`.toLowerCase();
+        return terms.every((term) => searchable.includes(term));
+      });
+    }
+    if (category !== 'All') list = list.filter((t) => t.trade.toLowerCase().includes(category.toLowerCase()));
+    if (filters.fee === 'Under ₹149') list = list.filter((t) => Number(t.fee) < 149);
+    if (filters.fee === 'Under ₹249') list = list.filter((t) => Number(t.fee) < 249);
+    if (filters.distance) {
+      const maxDistance = Number(filters.distance.match(/\d+/)?.[0]);
+      list = list.filter((t) => Number(t.distance.match(/[\d.]+/)?.[0]) <= maxDistance);
+    }
+    if (filters.rating) {
+      const minimumRating = Number(filters.rating.match(/[\d.]+/)?.[0]);
+      list = list.filter((t) => Number(t.rating) >= minimumRating);
+    }
+    if (filters.available) list = list.filter((t) => t.available);
     if (sort === 'Lowest Visiting Fee') list.sort((a, b) => a.fee - b.fee);
     if (sort === 'Highest Rated') list.sort((a, b) => b.rating - a.rating);
+    if (sort === 'Nearest') list.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
     return list;
-  }, [query, sort]);
-
-  const count = category === 'All' ? feed.length : feed.filter(() => true).length;
+  }, [category, filters, query, sort]);
 
   return (
     <MainLayout active="home" onChange={go}>
@@ -97,8 +114,9 @@ export default function HomeScreen({ go }) {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-          {['All', ...categories.map((c) => c.label)].map((label) => (
+          {[{ label: 'All', icon: 'grid-outline' }, ...categories].map(({ label, icon }) => (
             <Pressable key={label} onPress={() => setCategory(label)} style={[styles.categoryChip, category === label && styles.categoryChipActive]}>
+              <Ionicons name={icon} size={14} color={category === label ? C.white : C.teal} />
               <Text style={[styles.categoryText, category === label && styles.categoryTextActive]}>{label}</Text>
             </Pressable>
           ))}
@@ -113,7 +131,7 @@ export default function HomeScreen({ go }) {
         </ScrollView>
 
         <View style={styles.sectionHeader}>
-          <View><Text style={styles.sectionTitle}>Trusted near you</Text><Text style={styles.sectionSub}>{count} verified pros available today</Text></View>
+          <View><Text style={styles.sectionTitle}>Trusted near you</Text><Text style={styles.sectionSub}>{feed.length} verified pros match your filters</Text></View>
         </View>
 
         {feed.map((item) => (
@@ -139,13 +157,19 @@ export default function HomeScreen({ go }) {
             </View>
             <View style={styles.techCardBottom}>
               <View><Text style={styles.cardCaption}>VISITING CHARGE</Text><Text style={styles.cardPrice}>₹{item.fee}</Text></View>
-              <View><Text style={styles.cardCaption}>STARTS AT</Text><Text style={styles.cardPrice}>₹299</Text></View>
+              <View><Text style={styles.cardCaption}>STARTS AT</Text><Text style={styles.cardPrice}>₹{item.startsAt}</Text></View>
               <Pressable onPress={() => go('technicianDetails')} style={styles.bookBtn}>
                 <Text style={styles.bookBtnText}>View & Book</Text>
               </Pressable>
             </View>
           </Pressable>
         ))}
+        {feed.length === 0 && (
+          <View style={styles.infoCard}>
+            <Ionicons name="search-outline" size={20} color={C.teal} />
+            <Text style={styles.infoCardText}>No technicians match these filters. Try a wider distance or a lower minimum rating.</Text>
+          </View>
+        )}
 
         <View style={styles.trustStrip}>
           <Ionicons name="shield-checkmark-outline" size={20} color={C.teal} />

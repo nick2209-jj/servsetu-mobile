@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../../theme';
 import { Header, StatusPill } from '../../components';
@@ -28,10 +28,12 @@ const REVIEWS = [
 const DATES = ['Today', 'Tomorrow', 'Pick Date'];
 const SLOTS = [['Morning', '9–12'], ['Afternoon', '12–4'], ['Evening', '4–8']];
 
-function Stepper({ go }) {
+function Stepper({ go, service, setService, description, setDescription, photoCount, setPhotoCount, date, setDate, slot, setSlot }) {
+  const [serviceOpen, setServiceOpen] = useState(false);
+  const services = ['Split AC · Not cooling', 'Tap / mixer · Leakage', 'Washing machine · Not working', 'Other appliance'];
   return (
     <View style={styles.flex}>
-      <Header title="Technician profile" onBack={() => go('home')} right={<Pressable onPress={() => {}} style={styles.iconButton}><Ionicons name="share-social-outline" size={20} color={C.navy} /></Pressable>} />
+      <Header title="Ramesh Patel" onBack={() => go('home')} right={<Pressable onPress={() => Share.share({ message: 'Book Ramesh Patel on ServSetu for verified home repairs.' })} style={styles.iconButton}><Ionicons name="share-social-outline" size={20} color={C.navy} /></Pressable>} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.pagePadding, { paddingBottom: 110 }]}>
         <View style={styles.profileHero}>
           <View style={[styles.profileAvatar, { backgroundColor: C.tealLight }]}>
@@ -39,6 +41,10 @@ function Stepper({ go }) {
             <View style={[styles.kycBadge, { width: 24, height: 24, right: 2, bottom: 2 }]}><Ionicons name="checkmark" size={14} color={C.white} /></View>
           </View>
           <Text style={styles.profileName}>Ramesh Patel</Text>
+          <View style={[styles.ratingRow, { marginTop: 6 }]}>
+            <Ionicons name="shield-checkmark" size={14} color={C.teal} />
+            <Text style={[styles.statLabel, { color: C.teal, fontWeight: '800', marginTop: 0 }]}>KYC Verified</Text>
+          </View>
           <Text style={styles.profileTrade}>Electrician · AC & Fridge specialist</Text>
           <View style={styles.profileStats}>
             <View><Text style={styles.bigStat}>8 yrs</Text><Text style={styles.statLabel}>experience</Text></View>
@@ -88,24 +94,24 @@ function Stepper({ go }) {
         <Text style={styles.sectionTitle}>Send a service request</Text>
         <View style={styles.quoteCard}>
           <Text style={styles.fieldLabel}>SELECT SERVICE / APPLIANCE</Text>
-          <Pressable style={styles.tradeSelect}>
-            <Text style={[styles.tradeSelectText, { color: '#9AA8B5' }]}>e.g. Split AC · Not cooling</Text>
+          <Pressable onPress={() => setServiceOpen(true)} style={styles.tradeSelect}>
+            <Text style={[styles.tradeSelectText, !service && { color: '#9AA8B5' }]}>{service || 'Select service / appliance'}</Text>
             <Ionicons name="chevron-down" size={18} color={C.muted} />
           </Pressable>
           <Text style={styles.fieldLabel}>ISSUE DESCRIPTION</Text>
           <View style={[styles.fieldBox, { height: 74, alignItems: 'flex-start', paddingTop: 12, marginBottom: 14 }]}>
-            <TextInput multiline placeholder="Describe the issue briefly..." placeholderTextColor="#9AA8B5" style={[styles.fieldInput, { textAlignVertical: 'top' }]} />
+            <TextInput value={description} onChangeText={setDescription} multiline placeholder="Describe the issue briefly..." placeholderTextColor="#9AA8B5" style={[styles.fieldInput, { textAlignVertical: 'top' }]} />
           </View>
           <Text style={styles.fieldLabel}>UPLOAD PROBLEM PHOTO <Text style={styles.optional}>UP TO 3</Text></Text>
-          <Pressable style={[styles.photoBox, { height: 64 }]}>
+          <Pressable onPress={() => setPhotoCount((count) => Math.min(count + 1, 3))} style={[styles.photoBox, { height: 64 }]}>
             <Ionicons name="camera-outline" size={22} color={C.teal} />
-            <Text style={styles.photoText}>Tap to add photos</Text>
+            <Text style={styles.photoText}>{photoCount ? `${photoCount} photo${photoCount === 1 ? '' : 's'} added · tap to add` : 'Tap to add photos'}{photoCount === 3 ? ' · limit reached' : ''}</Text>
           </Pressable>
           <Text style={styles.fieldLabel}>PREFERRED DATE</Text>
-          <View style={styles.dateChipRow}>{DATES.map((d) => <Pressable key={d} style={[styles.dateChip, d === 'Today' && styles.dateChipActive]}><Text style={[styles.chipText, d === 'Today' && styles.chipTextActive]}>{d}</Text></Pressable>)}</View>
+          <View style={styles.dateChipRow}>{DATES.map((d) => <Pressable key={d} onPress={() => setDate(d)} style={[styles.dateChip, date === d && styles.dateChipActive]}><Text style={[styles.chipText, date === d && styles.chipTextActive]}>{d}</Text></Pressable>)}</View>
           <View style={styles.slotRow}>{SLOTS.map(([label, time], i) => (
-            <Pressable key={label} style={[styles.slot, i === 1 && styles.slotActive]}>
-              <Text style={[styles.slotText, i === 1 && { color: C.teal }]}>{label}</Text>
+            <Pressable key={label} onPress={() => setSlot(label)} style={[styles.slot, slot === label && styles.slotActive]}>
+              <Text style={[styles.slotText, slot === label && { color: C.teal }]}>{label}</Text>
               <Text style={styles.slotTime}>{time}</Text>
             </Pressable>
           ))}</View>
@@ -117,15 +123,39 @@ function Stepper({ go }) {
           <Text style={styles.cardCaption}>VISITING FEE</Text>
           <Text style={styles.cardPrice}>₹149</Text>
         </View>
-        <Pressable onPress={() => go('bookingDetails')} style={[styles.payBtn, { backgroundColor: C.teal }]}>
+        <Pressable onPress={() => {
+          if (!service || !description.trim()) {
+            Alert.alert('Add service details', 'Choose a service and describe the issue before sending your request.');
+            return;
+          }
+          go('bookingDetails');
+        }} style={[styles.payBtn, { backgroundColor: C.teal }]}>
           <Text style={styles.payBtnText}>Send Service Request</Text>
         </Pressable>
       </View>
+      <Modal transparent visible={serviceOpen} animationType="slide" onRequestClose={() => setServiceOpen(false)}>
+        <Pressable style={styles.sheetOverlay} onPress={() => setServiceOpen(false)}>
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Select service / appliance</Text>
+            {services.map((item) => (
+              <Pressable key={item} onPress={() => { setService(item); setServiceOpen(false); }} style={styles.settingsRow}>
+                <Text style={[styles.settingsTitle, { flex: 1 }]}>{item}</Text>
+                {service === item && <Ionicons name="checkmark" size={18} color={C.teal} />}
+              </Pressable>
+            ))}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
 
 export default function TechnicianDetails({ go }) {
-  const [submitted, setSubmitted] = useState(false);
-  return <Stepper go={go} />;
+  const [service, setService] = useState('');
+  const [description, setDescription] = useState('');
+  const [photoCount, setPhotoCount] = useState(0);
+  const [date, setDate] = useState('Today');
+  const [slot, setSlot] = useState('Afternoon');
+  return <Stepper go={go} service={service} setService={setService} description={description} setDescription={setDescription} photoCount={photoCount} setPhotoCount={setPhotoCount} date={date} setDate={setDate} slot={slot} setSlot={setSlot} />;
 }

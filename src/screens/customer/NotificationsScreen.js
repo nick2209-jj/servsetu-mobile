@@ -34,8 +34,10 @@ function AlertCard({ item, onPress }) {
   );
 }
 
-export default function CustomerNotifications({ go }) {
-  const [alerts, setAlerts] = useState(seedAlerts);
+export default function CustomerNotifications({ go, technician = false }) {
+  const [alerts, setAlerts] = useState(technician
+    ? seedAlerts.map((item) => ({ ...item, title: item.title.replace('Ramesh', 'Customer'), link: 'jobManagement' }))
+    : seedAlerts);
 
   const unreadCount = alerts.filter((a) => a.unread).length;
 
@@ -49,9 +51,9 @@ export default function CustomerNotifications({ go }) {
   return (
     <View style={styles.flex}>
       <Header
-        title="Notifications"
+        title={technician ? 'Partner Notifications' : 'Notifications'}
         subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up'}
-        onBack={() => go('home')}
+        onBack={() => go(technician ? 'techDashboard' : 'home')}
         right={
           <Pressable onPress={markAllRead}>
             <Text style={styles.markRead}>Mark All Read</Text>

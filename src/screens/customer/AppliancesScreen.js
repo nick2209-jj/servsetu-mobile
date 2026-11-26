@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../../theme';
 import { Button, Header } from '../../components';
@@ -11,7 +11,7 @@ const APPLIANCES = [
   { name: 'Aquaguard RO', cat: 'RO Purifier', last: 'Repaired 02 Jul 2024 · Imran Shaikh', parts: 'Membrane · 90 days warranty', days: 'Warranty expired', color: C.redLight },
 ];
 
-function ApplianceView() {
+function ApplianceView({ go }) {
   return (
     <>
       {APPLIANCES.map((a) => (
@@ -28,7 +28,7 @@ function ApplianceView() {
               <Text style={[styles.warrantyPillText, a.days.includes('expired') && { color: C.red }]}>{a.days}</Text>
             </View>
             {a.days !== 'Warranty expired' && (
-              <Pressable onPress={() => Alert.alert('Warranty claim', 'A ₹0 warranty re-visit booking has been pre-filled.')} style={[styles.bookBtn, { alignSelf: 'flex-start', marginTop: 8, backgroundColor: C.tealLight }]}>
+              <Pressable onPress={() => go('warrantyClaim')} style={[styles.bookBtn, { alignSelf: 'flex-start', marginTop: 8, backgroundColor: C.tealLight }]}>
                 <Text style={[styles.bookBtnText, { color: C.teal }]}>Claim Free Warranty Re-visit</Text>
               </Pressable>
             )}
@@ -64,7 +64,7 @@ function TxnView() {
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={styles.transactionAmount}>{amount}</Text>
-            <Pressable onPress={() => Alert.alert('Invoice', 'PDF invoice generated (demo).')}>
+            <Pressable accessibilityLabel={`Download invoice for ${id}`} onPress={() => Alert.alert('Invoice', `The invoice for ${id} is not available in this demo.`)}>
               <Ionicons name="download-outline" size={17} color={C.teal} />
             </Pressable>
           </View>
@@ -81,6 +81,20 @@ const ADDRESSES = [
 
 function AddressView() {
   const [addrs, setAddrs] = useState(ADDRESSES);
+  const [addOpen, setAddOpen] = useState(false);
+  const [tag, setTag] = useState('Home');
+  const [line1, setLine1] = useState('');
+  const [line2, setLine2] = useState('');
+  const addAddress = () => {
+    if (!line1.trim() || !line2.trim()) {
+      Alert.alert('Complete the address', 'Enter the flat / society and area / pincode before saving.');
+      return;
+    }
+    setAddrs((prev) => [...prev.map((a) => [a[0], a[1], a[2], false]), [tag, line1.trim(), line2.trim(), prev.length === 0]]);
+    setLine1('');
+    setLine2('');
+    setAddOpen(false);
+  };
   return (
     <>
       {addrs.map(([tag, line1, line2, def], i) => (
@@ -99,7 +113,25 @@ function AddressView() {
           </Pressable>
         </View>
       ))}
-      <Button secondary onPress={() => Alert.alert('Add address', 'New address form opened.')}>&nbsp;+ Add New Address</Button>
+      <Button secondary onPress={() => setAddOpen(true)}>+ Add New Address</Button>
+      <Modal transparent visible={addOpen} animationType="slide" onRequestClose={() => setAddOpen(false)}>
+        <Pressable style={styles.sheetOverlay} onPress={() => setAddOpen(false)}>
+          <Pressable style={styles.sheet} onPress={() => {}}>
+            <View style={styles.sheetHandle} />
+            <Text style={styles.sheetTitle}>Add a saved address</Text>
+            <View style={styles.chipWrap}>
+              {['Home', 'Work', 'Society'].map((item) => (
+                <Pressable key={item} onPress={() => setTag(item)} style={[styles.chip, tag === item && styles.chipActive]}>
+                  <Text style={[styles.chipText, tag === item && styles.chipTextActive]}>{item}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <TextInput value={line1} onChangeText={setLine1} placeholder="Flat no. and society" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 10 }]} />
+            <TextInput value={line2} onChangeText={setLine2} placeholder="Landmark, city and pincode" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 14 }]} />
+            <Button onPress={addAddress}>Save address</Button>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -115,7 +147,18 @@ const RATES = [
 
 function RateGuideView() {
   const [q, setQ] = useState('');
+  const [booking, setBooking] = useState('');
+  const [description, setDescription] = useState('');
   const list = RATES.filter(([n]) => n.toLowerCase().includes(q.toLowerCase()));
+  const submitDispute = () => {
+    if (!booking || !description.trim()) {
+      Alert.alert('Complete the dispute form', 'Select a recent booking and describe what you would like us to review.');
+      return;
+    }
+    Alert.alert('Dispute submitted', `Your concern about ${booking} has been recorded for review.`);
+    setBooking('');
+    setDescription('');
+  };
   return (
     <>
       <View style={styles.searchGuide}>
@@ -131,13 +174,26 @@ function RateGuideView() {
         ))}
         {list.length === 0 && <Text style={styles.centerNote}>No matching rates found.</Text>}
       </View>
-      <View style={styles.disputeBox} />
-      <Button secondary onPress={() => Alert.alert('Raise a dispute', 'A dispute form linked to your recent bookings has been opened.')}>Raise a Dispute</Button>
+      <View style={styles.disputeBox}>
+        <Text style={styles.settingsTitle}>Raise a dispute</Text>
+        <Text style={styles.settingsSub}>Choose a recent booking and tell us what happened.</Text>
+        <View style={[styles.chipWrap, { marginTop: 10 }]}>
+          {['SRV-4092', 'SRV-3988', 'SRV-3950'].map((id) => (
+            <Pressable key={id} onPress={() => setBooking(id)} style={[styles.chip, booking === id && styles.chipActive]}>
+              <Text style={[styles.chipText, booking === id && styles.chipTextActive]}>{id}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <View style={[styles.fieldBox, { minHeight: 76, alignItems: 'flex-start', paddingTop: 10, marginTop: 12 }]}>
+          <TextInput value={description} onChangeText={setDescription} multiline placeholder="Describe the issue with the quote or repair..." placeholderTextColor="#9AA8B5" style={[styles.fieldInput, { textAlignVertical: 'top' }]} />
+        </View>
+        <Button onPress={submitDispute}>Submit dispute</Button>
+      </View>
     </>
   );
 }
 
-export default function AppliancesScreen({ go, view = 'appliances' }) {
+export default function AppliancesScreen({ go, view = 'appliances', fromSettings = false }) {
   const titles = {
     appliances: ['Appliances & Warranties', 'Your digital repair log'],
     transactions: ['Transaction History', 'Receipts for every payment'],
@@ -147,9 +203,9 @@ export default function AppliancesScreen({ go, view = 'appliances' }) {
   const [title, subtitle] = titles[view];
   return (
     <View style={styles.flex}>
-      <Header title={title} subtitle={subtitle} onBack={() => go('settings')} />
+      <Header title={title} subtitle={subtitle} onBack={() => go(view === 'appliances' && !fromSettings ? 'bookings' : 'settings')} />
       <ScrollView contentContainerStyle={styles.pagePadding}>
-        {view === 'appliances' && <ApplianceView />}
+        {view === 'appliances' && <ApplianceView go={go} />}
         {view === 'transactions' && <TxnView />}
         {view === 'addresses' && <AddressView />}
         {view === 'support' && <RateGuideView />}

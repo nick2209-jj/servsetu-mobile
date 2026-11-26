@@ -32,12 +32,12 @@ function StatusStepper({ current }) {
   );
 }
 
-export default function BookingDetails({ go }) {
-  const [status, setStatus] = useState('quotePending');
+export default function BookingDetails({ go, initialStatus = 'quotePending' }) {
+  const [status, setStatus] = useState(initialStatus);
   const [extra, setExtra] = useState('pending');
   const completed = status === 'completed';
 
-  const approve = () => { setStatus('approved'); Alert.alert('Quote approved', 'Ramesh can begin the repair. The visiting fee is waived.'); };
+  const approve = () => { setStatus('inProgress'); Alert.alert('Quote approved', 'Ramesh can begin the repair. The visiting fee is waived.'); };
   const reject = () => { Alert.alert('Quote declined', '₹149 visit fee applies. The technician has been notified.'); go('bookings'); };
   const pay = () => go('payment');
 
@@ -45,7 +45,7 @@ export default function BookingDetails({ go }) {
     <View style={styles.flex}>
       <Header title="Booking #SRV-4092" onBack={() => go('bookings')} right={<IconButton name="help-circle-outline" onPress={() => go('support')} />} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.pagePadding, { paddingBottom: 120 }]}>
-        <StatusStepper current={completed ? 4 : status === 'approved' ? 2 : 1} />
+        <StatusStepper current={completed ? 4 : status === 'inProgress' ? 3 : 1} />
 
         <View style={[styles.personCard, { marginTop: 16 }]}>
           <View style={[styles.avatar, { backgroundColor: C.tealLight }]}><Text style={styles.avatarText}>RP</Text></View>
@@ -53,7 +53,7 @@ export default function BookingDetails({ go }) {
             <Text style={styles.techName}>Ramesh Patel</Text>
             <Text style={styles.techTrade}>Electrician · 4.9 ★ · Today 4–6 PM</Text>
           </View>
-          <Pressable style={styles.callButton}>
+          <Pressable onPress={() => Alert.alert('Call Technician', 'Calling is available once a live technician phone number is connected.')} style={styles.callButton}>
             <Ionicons name="call-outline" size={16} color={C.teal} />
             <Text style={styles.callText}>Call Technician</Text>
           </Pressable>
@@ -88,12 +88,12 @@ export default function BookingDetails({ go }) {
               </Pressable>
             </View>
           )}
-          {status === 'approved' && (
+          {status === 'inProgress' && (
             <View style={[styles.warrantyPill, { backgroundColor: C.greenLight }]}><Text style={styles.warrantyPillText}>Quote approved · Work in progress</Text></View>
           )}
         </View>
 
-        {extra === 'pending' && status !== 'quotePending' && (
+        {extra === 'pending' && status === 'inProgress' && (
           <>
             <Text style={styles.sectionTitle}>Mid-repair additional charge</Text>
             <View style={[styles.waiverNote, { backgroundColor: C.orangeLight, borderRadius: 14, padding: 14, flexDirection: 'column', gap: 8 }]}>
@@ -110,12 +110,18 @@ export default function BookingDetails({ go }) {
                 <Pressable onPress={() => setExtra('declined')} style={[styles.payBtn, { backgroundColor: C.white, borderWidth: 1.5, borderColor: C.line, flex: 1 }]}>
                   <Text style={[styles.payBtnText, { color: C.muted }]}>Decline</Text>
                 </Pressable>
-                <Pressable onPress={() => { setExtra('approved'); setStatus('completed'); Alert.alert('Extra charge approved', 'Technician will complete the repair.'); }} style={[styles.payBtn, { backgroundColor: C.orange, flex: 1 }]}>
+                <Pressable onPress={() => { setExtra('approved'); Alert.alert('Extra charge approved', 'The technician has been notified. Payment unlocks after the service is marked completed.'); }} style={[styles.payBtn, { backgroundColor: C.orange, flex: 1 }]}>
                   <Text style={styles.payBtnText}>Approve Extra ₹180</Text>
                 </Pressable>
               </View>
             </View>
           </>
+        )}
+        {extra === 'approved' && (
+          <View style={[styles.formInfo, { marginTop: 12 }]}>
+            <Ionicons name="time-outline" size={18} color={C.teal} />
+            <Text style={styles.formInfoText}>Extra charge approved. Payment stays locked until the technician marks the job completed.</Text>
+          </View>
         )}
       </ScrollView>
 

@@ -7,7 +7,7 @@ import { styles } from '../theme/appStyles';
 export function BottomNav({ active, onChange, technician = false }) {
   const items = technician
     ? [['techDashboard', 'grid-outline', 'Dashboard'], ['services', 'list-outline', 'My services'], ['earnings', 'wallet-outline', 'Earnings'], ['techSettings', 'settings-outline', 'Settings']]
-    : [['home', 'home-outline', 'Home'], ['bookings', 'calendar-outline', 'Bookings'], ['settings', 'settings-outline', 'Settings']];
+    : [['home', 'home-outline', 'Home'], ['bookings', 'calendar-outline', 'My Bookings'], ['settings', 'settings-outline', 'Settings']];
   return (
     <View style={styles.bottomNav}>
       {items.map(([key, icon, label]) => (
