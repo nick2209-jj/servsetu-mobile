@@ -40,7 +40,8 @@ const screens = {
   payment: (state) => <PaymentScreen go={state.go} />,
   notifications: (state) => <CustomerNotifications go={state.go} />,
   settings: (state) => <SettingsScreen go={state.go} />,
-  appliances: (state) => <AppliancesScreen go={state.go} />,
+  appliances: (state) => <AppliancesScreen go={state.go} view={state.params?.view || 'appliances'} />,
+  addresses: (state) => <AppliancesScreen go={state.go} view="addresses" />,
   transactions: (state) => <TransactionsScreen go={state.go} />,
   profile: (state) => <ProfileScreen go={state.go} />,
   support: (state) => <SupportScreen go={state.go} />,
@@ -57,7 +58,7 @@ export default function App() {
   const [booting, setBooting] = useState(true);
   const [screen, setScreen] = useState('login');
   const [role, setRole] = useState('customer');
-  const state = { role, setRole, go: setScreen };
+  const state = { role, setRole, go: setScreen, params: null };
 
   if (booting) return <Splash onFinish={() => setBooting(false)} />;
 

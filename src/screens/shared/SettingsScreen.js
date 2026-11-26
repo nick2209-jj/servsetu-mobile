@@ -1,46 +1,53 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { C } from '../../theme';
-import { Button, Field, Header, Icon, MainLayout } from '../../components';
+import { Header, MainLayout } from '../../components';
 import { styles } from '../../theme/appStyles';
 
-function SettingsRow({ icon, iconColor, iconBg, title, sub, target, go, titleColor }) {
-  return (
-    <Pressable onPress={target ? () => go(target) : undefined} style={styles.settingsRow}>
-      <View style={[styles.settingsIcon, iconBg && { backgroundColor: iconBg }]}>
-        <Icon name={icon} size={20} color={iconColor || C.teal} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.settingsTitle, titleColor && { color: titleColor }]}>{title}</Text>
-        {sub && <Text style={styles.settingsSub}>{sub}</Text>}
-      </View>
-      {!titleColor && <Icon name="chevron-forward" size={18} color={C.muted} />}
-    </Pressable>
-  );
-}
+const MENU = [
+  ['shield-checkmark-outline', 'My Appliances & Digital Warranties', '3 active', 'appliances', true],
+  ['receipt-outline', 'Transaction & Receipt History', 'Invoices and payments', 'transactions', false],
+  ['home-outline', 'Saved Addresses', 'Home / Office / Society', 'addresses', false],
+  ['notifications-outline', 'Notification Preferences', 'Push, SMS and email alerts', 'notifications', false],
+  ['book-outline', 'Rate Card Guide & Dispute Support', 'Standard market repair rates', 'support', false],
+];
 
-export default function SettingsScreen({ go, technician = false }) {
-  const items = technician
-    ? [['person-outline', 'Profile & KYC', 'Your trade skills and verification', 'profile'], ['navigate-outline', 'Work rules & radius', 'Set visiting fee and service area', 'workRules'], ['wallet-outline', 'Payout account', 'UPI ID and bank details', 'payout'], ['notifications-outline', 'Notifications & help', 'Support for your business', 'notifications']]
-    : [['document-text-outline', 'My appliances & warranties', '2 active warranties', 'appliances'], ['receipt-outline', 'Transaction history', 'Invoices and payment records', 'transactions'], ['person-outline', 'Profile & addresses', 'Personal details and saved locations', 'profile'], ['help-circle-outline', 'Support & rules', 'Rate card, cancellations and disputes', 'support']];
+export default function SettingsScreen({ go }) {
   return (
-    <MainLayout active={technician ? 'techSettings' : 'settings'} onChange={go} technician={technician}>
+    <MainLayout active="settings" onChange={go}>
       <ScrollView contentContainerStyle={styles.pagePadding}>
-        <Header title="Settings" subtitle={technician ? 'Manage your work profile' : 'Manage your ServSetu account'} />
+        <Header title="Settings" />
         <View style={styles.settingsProfile}>
-          <View style={[styles.profileAvatarSmall, { backgroundColor: technician ? C.orangeLight : C.tealLight }]}>
-            <Text style={styles.profileInitialsSmall}>{technician ? 'RP' : 'PS'}</Text>
+          <View style={[styles.profileAvatarSmall, { backgroundColor: C.tealLight }]}>
+            <Text style={styles.profileInitialsSmall}>PS</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.settingsName}>{technician ? 'Ramesh Patel' : 'Priya Shah'}</Text>
-            <Text style={styles.settingsEmail}>{technician ? 'Electrician · Aadhaar verified' : '+91 98765 43210'}</Text>
+            <Text style={styles.settingsName}>Priya Shah</Text>
+            <Text style={styles.settingsEmail}>+91 98765 43210 · Alkapuri, Vadodara</Text>
           </View>
-          <Icon name="chevron-forward" size={19} color={C.muted} />
+          <Pressable onPress={() => go('profile')} style={styles.iconButton}>
+            <Ionicons name="pencil-outline" size={17} color={C.navy} />
+          </Pressable>
         </View>
-        {items.map(([icon, title, sub, target]) => <SettingsRow key={title} icon={icon} title={title} sub={sub} target={target} go={go} />)}
+
+        {MENU.map(([icon, title, sub, target, badge]) => (
+          <Pressable key={target} onPress={() => go(target)} style={styles.settingsRow}>
+            <View style={styles.settingsIcon}><Ionicons name={icon} size={20} color={C.teal} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.settingsTitle}>{title}</Text>
+              <Text style={styles.settingsSub}>{sub}</Text>
+            </View>
+            {badge && <View style={styles.menuBadge}><Text style={styles.menuBadgeText}>3</Text></View>}
+            <Ionicons name="chevron-forward" size={18} color={C.muted} />
+          </Pressable>
+        ))}
+
         <View style={styles.settingsDivider} />
-        <SettingsRow icon="log-out-outline" iconColor={C.red} iconBg={C.redLight} title="Log out" titleColor={C.red} go={go} />
-        <Text style={styles.appVersion}>ServSetu v1.0.0 · Made for India</Text>
+        <Pressable style={styles.logoutBtn} onPress={() => go('login')}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </Pressable>
+        <Text style={styles.appVersion}>ServSetu v1.0</Text>
       </ScrollView>
     </MainLayout>
   );
