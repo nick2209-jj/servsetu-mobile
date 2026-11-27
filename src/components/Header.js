@@ -45,7 +45,7 @@ export function RoleToggle({ role, setRole }) {
       {['customer', 'technician'].map((item) => (
         <Pressable key={item} onPress={() => setRole(item)} style={[styles.roleItem, role === item && styles.roleItemActive]}>
           <Icon name={item === 'customer' ? 'home-outline' : 'construct-outline'} size={16} color={role === item ? C.white : C.muted} />
-          <Text style={[styles.roleText, role === item && styles.roleTextActive]}>{item === 'customer' ? 'I need a repair' : 'I am a mistri'}</Text>
+          <Text style={[styles.roleText, role === item && styles.roleTextActive]}>{item === 'customer' ? 'Customer' : 'Technician / Mistri'}</Text>
         </Pressable>
       ))}
     </View>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '../../theme';
 import { Button, Header } from '../../components';
@@ -44,91 +44,207 @@ function ApplianceView({ go }) {
 }
 
 const TXNS = [
-  ['26 Sep', 'Ramesh Patel', 'SRV-4092', 'UPI', '₹681'],
-  ['08 Sep', 'Imran Shaikh', 'SRV-3988', 'Cash', '₹299'],
-  ['21 Aug', 'Ramesh Patel', 'SRV-3950', 'UPI', '₹550'],
+  { date: '26 Sep', technician: 'Ramesh Patel', id: 'SRV-4092', service: 'AC compressor repair', mode: 'UPI', amount: 681 },
+  { date: '08 Sep', technician: 'Imran Shaikh', id: 'SRV-3988', service: 'Kitchen tap replacement', mode: 'Cash', amount: 299 },
+  { date: '21 Aug', technician: 'Ramesh Patel', id: 'SRV-3950', service: 'AC servicing', mode: 'UPI', amount: 550 },
 ];
 
+function getReceiptTax(total) {
+  const taxable = Number((total / 1.18).toFixed(2));
+  return { taxable, gst: Number((total - taxable).toFixed(2)) };
+}
+
 function TxnView() {
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+  const selectedTax = selectedReceipt ? getReceiptTax(selectedReceipt.amount) : null;
+  const shareReceipt = async () => {
+    if (!selectedReceipt) return;
+    const total = selectedReceipt.amount;
+    const { taxable, gst } = getReceiptTax(total);
+    const message = [
+      'ServSetu receipt preview (demo)',
+      `Booking: ${selectedReceipt.id}`,
+      `Service: ${selectedReceipt.service}`,
+      `Technician: ${selectedReceipt.technician}`,
+      `Service amount before GST: ₹${taxable}`,
+      `GST (18%): ₹${gst}`,
+      `Total paid: ₹${total}`,
+      `Payment method: ${selectedReceipt.mode}`,
+    ].join('\n');
+    try {
+      await Share.share({ title: `Receipt ${selectedReceipt.id}`, message });
+    } catch (error) {
+      Alert.alert('Unable to share receipt', error.message || 'Please try again.');
+    }
+  };
+
   return (
     <>
-      {TXNS.map(([date, name, id, mode, amount]) => (
-        <View key={id} style={styles.transactionRow}>
-          <View style={styles.transactionDate}><Text style={styles.transactionDay}>{date.split(' ')[0]}</Text><Text style={styles.transactionMonth}>{date.split(' ')[1]}</Text></View>
+      {TXNS.map((transaction) => (
+        <View key={transaction.id} style={styles.transactionRow}>
+          <View style={styles.transactionDate}><Text style={styles.transactionDay}>{transaction.date.split(' ')[0]}</Text><Text style={styles.transactionMonth}>{transaction.date.split(' ')[1]}</Text></View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.transactionTitle}>{name}</Text>
-            <Text style={styles.transactionSub}>{id}</Text>
-            <View style={[styles.addrTag, { alignSelf: 'flex-start', marginTop: 4, backgroundColor: mode === 'UPI' ? C.tealLight : C.orangeLight }]}>
-              <Text style={[styles.addrTagText, { color: mode === 'UPI' ? C.teal : C.orange }]}>{mode}</Text>
+            <Text style={styles.transactionTitle}>{transaction.technician}</Text>
+            <Text style={styles.transactionSub}>{transaction.id}</Text>
+            <View style={[styles.addrTag, { alignSelf: 'flex-start', marginTop: 4, backgroundColor: transaction.mode === 'UPI' ? C.tealLight : C.orangeLight }]}>
+              <Text style={[styles.addrTagText, { color: transaction.mode === 'UPI' ? C.teal : C.orange }]}>{transaction.mode}</Text>
             </View>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text style={styles.transactionAmount}>{amount}</Text>
-            <Pressable accessibilityLabel={`Download invoice for ${id}`} onPress={() => Alert.alert('Invoice', `The invoice for ${id} is not available in this demo.`)}>
+            <Text style={styles.transactionAmount}>₹{transaction.amount}</Text>
+            <Pressable accessibilityLabel={`Preview receipt for ${transaction.id}`} onPress={() => setSelectedReceipt(transaction)}>
               <Ionicons name="download-outline" size={17} color={C.teal} />
             </Pressable>
           </View>
         </View>
       ))}
+      <Modal transparent visible={!!selectedReceipt} animationType="slide" onRequestClose={() => setSelectedReceipt(null)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { alignItems: 'stretch' }]}>
+            {selectedReceipt && (
+              <>
+                <Text style={styles.sheetTitle}>Receipt Preview</Text>
+                <Text style={styles.transactionSub}>Booking {selectedReceipt.id} · {selectedReceipt.date}</Text>
+                <Text style={styles.centerNote}>Demo receipt · GST split is illustrative at 18%.</Text>
+                <View style={[styles.billCard, { width: '100%', marginTop: 14 }]}>
+                  <View style={styles.quoteRow}><Text style={styles.quoteLabel}>Service</Text><Text style={styles.quoteValue}>{selectedReceipt.service}</Text></View>
+                  <View style={styles.quoteRow}><Text style={styles.quoteLabel}>Technician</Text><Text style={styles.quoteValue}>{selectedReceipt.technician}</Text></View>
+                  <View style={styles.quoteRow}><Text style={styles.quoteLabel}>Service amount before GST</Text><Text style={styles.quoteValue}>₹{selectedTax.taxable.toFixed(2)}</Text></View>
+                  <View style={styles.quoteRow}><Text style={styles.quoteLabel}>GST (18%)</Text><Text style={styles.quoteValue}>₹{selectedTax.gst.toFixed(2)}</Text></View>
+                  <View style={styles.quoteDivider} />
+                  <View style={styles.quoteRow}><Text style={styles.quoteTotalLabel}>Total paid</Text><Text style={styles.quoteTotal}>₹{selectedReceipt.amount}</Text></View>
+                  <View style={[styles.addrTag, { alignSelf: 'flex-start', marginTop: 10, backgroundColor: selectedReceipt.mode === 'UPI' ? C.tealLight : C.orangeLight }]}>
+                    <Text style={[styles.addrTagText, { color: selectedReceipt.mode === 'UPI' ? C.teal : C.orange }]}>Paid via {selectedReceipt.mode}</Text>
+                  </View>
+                </View>
+                <Button onPress={shareReceipt}>Share / Save Receipt</Button>
+                <Button secondary onPress={() => setSelectedReceipt(null)}>Close</Button>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
 
 const ADDRESSES = [
-  ['Home', 'B-204, Shreeji Heights', 'Alkapuri, Vadodara · 390007', true],
-  ['Work', 'Unit 12, Laxmi Complex', 'Race Course, Vadodara · 390007', false],
+  { id: 'home', label: 'Home', flat: 'B-204', society: 'Shreeji Heights', area: 'Alkapuri, Vadodara', pincode: '390007', isDefault: true },
+  { id: 'work', label: 'Work', flat: 'Unit 12', society: 'Laxmi Complex', area: 'Race Course, Vadodara', pincode: '390007', isDefault: false },
 ];
 
 function AddressView() {
   const [addrs, setAddrs] = useState(ADDRESSES);
   const [addOpen, setAddOpen] = useState(false);
-  const [tag, setTag] = useState('Home');
-  const [line1, setLine1] = useState('');
-  const [line2, setLine2] = useState('');
-  const addAddress = () => {
-    if (!line1.trim() || !line2.trim()) {
-      Alert.alert('Complete the address', 'Enter the flat / society and area / pincode before saving.');
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [label, setLabel] = useState('Home');
+  const [flat, setFlat] = useState('');
+  const [society, setSociety] = useState('');
+  const [area, setArea] = useState('');
+  const [pincode, setPincode] = useState('');
+
+  const openNewAddress = () => {
+    setEditingAddressId(null);
+    setLabel('Home');
+    setFlat('');
+    setSociety('');
+    setArea('');
+    setPincode('');
+    setAddOpen(true);
+  };
+
+  const editAddress = (address) => {
+    setEditingAddressId(address.id);
+    setLabel(address.label);
+    setFlat(address.flat);
+    setSociety(address.society);
+    setArea(address.area);
+    setPincode(address.pincode);
+    setAddOpen(true);
+  };
+
+  const saveAddress = () => {
+    if (!label || !flat.trim() || !society.trim() || !area.trim() || !/^\d{6}$/.test(pincode)) {
+      Alert.alert('Complete the address', 'Enter a flat, society, area and valid 6-digit pincode.');
       return;
     }
-    setAddrs((prev) => [...prev.map((a) => [a[0], a[1], a[2], false]), [tag, line1.trim(), line2.trim(), prev.length === 0]]);
-    setLine1('');
-    setLine2('');
+    const updatedAddress = {
+      id: editingAddressId || `address-${Date.now()}`,
+      label,
+      flat: flat.trim(),
+      society: society.trim(),
+      area: area.trim(),
+      pincode,
+    };
+    setAddrs((current) => editingAddressId
+      ? current.map((address) => address.id === editingAddressId ? { ...address, ...updatedAddress } : address)
+      : [...current, { ...updatedAddress, isDefault: current.length === 0 }]);
     setAddOpen(false);
   };
+
+  const deleteAddress = (address) => {
+    Alert.alert('Delete saved address?', `Remove ${address.label} from your saved addresses?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => setAddrs((current) => {
+          const remaining = current.filter((item) => item.id !== address.id);
+          if (address.isDefault && remaining.length) {
+            return remaining.map((item, index) => ({ ...item, isDefault: index === 0 }));
+          }
+          return remaining;
+        }),
+      },
+    ]);
+  };
+
   return (
     <>
-      {addrs.map(([tag, line1, line2, def], i) => (
-        <View key={i} style={styles.addressCard}>
-          <Ionicons name={tag === 'Home' ? 'home-outline' : 'business-outline'} size={20} color={C.teal} />
+      {addrs.map((address) => (
+        <View key={address.id} style={styles.addressCard}>
+          <Ionicons name={address.label === 'Home' ? 'home-outline' : 'business-outline'} size={20} color={C.teal} />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              <View style={styles.addrTag}><Text style={styles.addrTagText}>{tag}</Text></View>
-              {def && <Text style={{ color: C.teal, fontSize: 9, fontWeight: '800' }}>DEFAULT</Text>}
+              <View style={styles.addrTag}><Text style={styles.addrTagText}>{address.label}</Text></View>
+              {address.isDefault && <Text style={{ color: C.teal, fontSize: 9, fontWeight: '800' }}>DEFAULT</Text>}
             </View>
-            <Text style={[styles.addressTitle, { marginTop: 5 }]}>{line1}</Text>
-            <Text style={styles.addressText}>{line2}</Text>
+            <Text style={[styles.addressTitle, { marginTop: 5 }]}>{address.flat}, {address.society}</Text>
+            <Text style={styles.addressText}>{address.area} · {address.pincode}</Text>
           </View>
-          <Pressable onPress={() => setAddrs((prev) => prev.map((a, j) => [a[0], a[1], a[2], j === i]))}>
-            <Ionicons name="radio-button-on" size={18} color={def ? C.teal : C.muted} />
-          </Pressable>
+          <View style={{ alignItems: 'center', gap: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              <Pressable accessibilityLabel={`Edit ${address.label} address`} onPress={() => editAddress(address)} style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: C.tealLight, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="pencil-outline" size={15} color={C.teal} />
+              </Pressable>
+              <Pressable accessibilityLabel={`Delete ${address.label} address`} onPress={() => deleteAddress(address)} style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: C.redLight, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="trash-outline" size={15} color={C.red} />
+              </Pressable>
+            </View>
+            <Pressable accessibilityLabel={`Set ${address.label} as default address`} onPress={() => setAddrs((current) => current.map((item) => ({ ...item, isDefault: item.id === address.id })))}>
+              <Ionicons name={address.isDefault ? 'radio-button-on' : 'radio-button-off'} size={18} color={address.isDefault ? C.teal : C.muted} />
+            </Pressable>
+          </View>
         </View>
       ))}
-      <Button secondary onPress={() => setAddOpen(true)}>+ Add New Address</Button>
+      <Button secondary onPress={openNewAddress}>+ Add New Address</Button>
       <Modal transparent visible={addOpen} animationType="slide" onRequestClose={() => setAddOpen(false)}>
         <Pressable style={styles.sheetOverlay} onPress={() => setAddOpen(false)}>
           <Pressable style={styles.sheet} onPress={() => {}}>
             <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Add a saved address</Text>
+            <Text style={styles.sheetTitle}>{editingAddressId ? 'Edit saved address' : 'Add a saved address'}</Text>
             <View style={styles.chipWrap}>
               {['Home', 'Work', 'Society'].map((item) => (
-                <Pressable key={item} onPress={() => setTag(item)} style={[styles.chip, tag === item && styles.chipActive]}>
-                  <Text style={[styles.chipText, tag === item && styles.chipTextActive]}>{item}</Text>
+                <Pressable key={item} onPress={() => setLabel(item)} style={[styles.chip, label === item && styles.chipActive]}>
+                  <Text style={[styles.chipText, label === item && styles.chipTextActive]}>{item}</Text>
                 </Pressable>
               ))}
             </View>
-            <TextInput value={line1} onChangeText={setLine1} placeholder="Flat no. and society" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 10 }]} />
-            <TextInput value={line2} onChangeText={setLine2} placeholder="Landmark, city and pincode" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 14 }]} />
-            <Button onPress={addAddress}>Save address</Button>
+            <TextInput value={flat} onChangeText={setFlat} placeholder="Flat / house number" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 10 }]} />
+            <TextInput value={society} onChangeText={setSociety} placeholder="Building / society" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 10 }]} />
+            <TextInput value={area} onChangeText={setArea} placeholder="Area / locality" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 10 }]} />
+            <TextInput value={pincode} onChangeText={(value) => setPincode(value.replace(/\D/g, '').slice(0, 6))} placeholder="6-digit pincode" keyboardType="number-pad" placeholderTextColor="#9AA8B5" style={[styles.fieldBox, { marginBottom: 14 }]} />
+            <Button onPress={saveAddress}>{editingAddressId ? 'Save changes' : 'Save address'}</Button>
           </Pressable>
         </Pressable>
       </Modal>

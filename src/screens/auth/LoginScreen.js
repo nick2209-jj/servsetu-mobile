@@ -17,6 +17,10 @@ export default function LoginScreen({ role, setRole, go }) {
       setError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
+    if (!password.trim()) {
+      setError('Enter your password to continue.');
+      return;
+    }
     setError('');
     go(role === 'customer' ? 'home' : 'techDashboard');
   };

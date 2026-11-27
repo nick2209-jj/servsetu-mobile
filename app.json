@@ -16,7 +16,19 @@
     ],
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow ServSetu to detect your service area and nearby technicians."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow ServSetu to upload fault photos and KYC verification documents."
+        }
+      ]
     ]
   }
 }

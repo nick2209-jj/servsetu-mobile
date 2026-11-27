@@ -28,7 +28,7 @@ import PayoutScreen from './src/screens/technician/PayoutScreen';
 
 const screens = {
   login: (state) => <LoginScreen role={state.role} setRole={state.setRole} go={state.go} />,
-  otp: (state) => <OtpScreen go={state.go} />,
+  otp: (state) => <OtpScreen role={state.role} go={state.go} />,
   register: (state) => <RegisterScreen role={state.role} setRole={state.setRole} go={state.go} />,
   forgot: (state) => <ForgotScreen go={state.go} />,
   home: (state) => <HomeScreen go={state.go} />,

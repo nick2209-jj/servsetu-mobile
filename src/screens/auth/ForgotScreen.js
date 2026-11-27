@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { C } from '../../theme';
 import { Button, Field, Header } from '../../components';
 import { styles } from '../../theme/appStyles';
@@ -13,6 +13,8 @@ export default function ForgotScreen({ go }) {
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
   const [pwError, setPwError] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [error, setError] = useState('');
   const boxRefs = useRef([]);
 
   useEffect(() => {
@@ -26,6 +28,25 @@ export default function ForgotScreen({ go }) {
     const d = val.replace(/\D/g, '');
     setOtp((prev) => prev.map((c, idx) => (idx === i ? d.slice(-1) : c)));
     if (d && i < 5) boxRefs.current[i + 1]?.focus();
+    setError('');
+  };
+
+  const sendOtp = () => {
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      setError('Enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+    setError('');
+    setStep(1);
+  };
+
+  const verifyOtp = () => {
+    if (otp.some((digit) => !digit)) {
+      setError('Enter the complete 6-digit OTP.');
+      return;
+    }
+    setError('');
+    setStep(2);
   };
 
   const updatePassword = () => {
@@ -57,8 +78,9 @@ export default function ForgotScreen({ go }) {
           <>
             <Text style={styles.authTitle}>Forgot your password?</Text>
             <Text style={styles.authSubtitle}>Enter your registered number and we will send a code.</Text>
-            <Field label="MOBILE NUMBER" placeholder="10-digit mobile number" keyboardType="number-pad" prefix="+91" />
-            <Button onPress={() => setStep(1)}>Send 6-Digit OTP</Button>
+            <Field label="MOBILE NUMBER" placeholder="10-digit mobile number" keyboardType="number-pad" prefix="+91" value={mobile} onChangeText={(value) => { setMobile(value.replace(/\D/g, '').slice(0, 10)); setError(''); }} />
+            {error ? <Text style={{ color: C.red, fontSize: 12, marginBottom: 10 }}>{error}</Text> : null}
+            <Button onPress={sendOtp}>Send 6-Digit OTP</Button>
           </>
         )}
 
@@ -80,9 +102,15 @@ export default function ForgotScreen({ go }) {
               ))}
             </View>
             <Text style={styles.centerNote}>
-              {seconds > 0 ? `Resend OTP in 00:${String(seconds).padStart(2, '0')}` : 'Did not receive the code? You can resend now.'}
+              {seconds > 0 ? `Resend OTP in 00:${String(seconds).padStart(2, '0')}` : 'Did not receive the code?'}
             </Text>
-            <Button onPress={() => setStep(2)}>Verify Code</Button>
+            {seconds === 0 && (
+              <Pressable onPress={() => { setSeconds(30); setOtp(['', '', '', '', '', '']); }} style={{ alignSelf: 'center', marginBottom: 10 }}>
+                <Text style={styles.link}>Resend OTP</Text>
+              </Pressable>
+            )}
+            {error ? <Text style={{ color: C.red, fontSize: 12, marginBottom: 10 }}>{error}</Text> : null}
+            <Button onPress={verifyOtp}>Verify Code</Button>
           </>
         )}
 

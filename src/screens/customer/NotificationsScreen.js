@@ -23,9 +23,7 @@ function AlertCard({ item, onPress }) {
       <View style={{ flex: 1 }}>
         <View style={styles.notificationTitleRow}>
           <Text style={styles.notificationTitle}>{item.title}</Text>
-          {item.unread
-            ? <View style={styles.unreadDot} />
-            : <View style={styles.notifReadDot} />}
+          {item.unread && <View style={styles.unreadDot} />}
         </View>
         <Text style={styles.notificationSub}>{item.sub}</Text>
         <Text style={styles.notificationTime}>{item.time}</Text>
@@ -51,7 +49,7 @@ export default function CustomerNotifications({ go, technician = false }) {
   return (
     <View style={styles.flex}>
       <Header
-        title={technician ? 'Partner Notifications' : 'Notifications'}
+        title="Notifications"
         subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'You are all caught up'}
         onBack={() => go(technician ? 'techDashboard' : 'home')}
         right={
