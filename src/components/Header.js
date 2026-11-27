@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { C } from '../theme';
-import { Icon, IconButton } from './index';
+import { Icon } from './Icon';
+import { IconButton } from './Button';
 import { styles } from '../theme/appStyles';
 
 export function Header({ title, subtitle, onBack, right, dark = false }) {

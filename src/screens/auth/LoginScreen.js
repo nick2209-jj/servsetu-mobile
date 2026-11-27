@@ -5,12 +5,14 @@ import { logo } from '../../assets';
 import { C } from '../../theme';
 import { Button, RoleToggle } from '../../components';
 import { styles } from '../../theme/appStyles';
+import { testAccounts } from '../../data/demo';
 
 export default function LoginScreen({ role, setRole, go }) {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
+  const [showDemoAccounts, setShowDemoAccounts] = useState(true);
 
   const signIn = () => {
     if (!/^[6-9]\d{9}$/.test(mobile)) {
@@ -21,8 +23,22 @@ export default function LoginScreen({ role, setRole, go }) {
       setError('Enter your password to continue.');
       return;
     }
+    const account = testAccounts.find(
+      (item) => item.mobile === mobile && item.password === password && item.role === role
+    );
+    if (!account) {
+      setError('Account not found. Choose one of the local demo accounts below.');
+      return;
+    }
     setError('');
-    go(role === 'customer' ? 'home' : 'techDashboard');
+    go(account.role === 'customer' ? 'home' : 'techDashboard');
+  };
+
+  const selectDemoAccount = (account) => {
+    setRole(account.role);
+    setMobile(account.mobile);
+    setPassword(account.password);
+    setError('');
   };
 
   return (
@@ -66,6 +82,42 @@ export default function LoginScreen({ role, setRole, go }) {
           </Pressable>
           {error ? <Text style={{ color: C.red, fontSize: 12, marginBottom: 10 }}>{error}</Text> : null}
           <Button onPress={signIn}>Sign In</Button>
+          <Pressable
+            onPress={() => setShowDemoAccounts(!showDemoAccounts)}
+            style={{ alignSelf: 'center', paddingVertical: 13 }}
+          >
+            <Text style={styles.link}>{showDemoAccounts ? 'Hide' : 'View'} 4 local demo accounts</Text>
+          </Pressable>
+          {showDemoAccounts && (
+            <View style={{ marginBottom: 4 }}>
+              <Text style={[styles.mutedText, { textAlign: 'center', marginBottom: 8 }]}>
+                Select an account to fill its test credentials
+              </Text>
+              {testAccounts.map((account) => (
+                <Pressable
+                  key={account.mobile}
+                  onPress={() => selectDemoAccount(account)}
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 12,
+                    marginBottom: 7,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: C.line,
+                    backgroundColor: C.white,
+                  }}
+                >
+                  <Text style={{ color: C.navy, fontSize: 13, fontWeight: '700' }}>
+                    {account.name} · {account.role === 'customer' ? 'Customer' : 'Technician'}
+                  </Text>
+                  <Text style={{ color: C.muted, fontSize: 12, marginTop: 2 }}>+91 {account.mobile}</Text>
+                </Pressable>
+              ))}
+              <Text style={{ color: C.muted, fontSize: 11, textAlign: 'center', marginBottom: 10 }}>
+                Local UI test accounts only — no backend or real accounts are created.
+              </Text>
+            </View>
+          )}
           <View style={styles.orRow}><View style={styles.orLine} /><Text style={styles.orText}>OR</Text><View style={styles.orLine} /></View>
           <Button secondary onPress={() => go('otp')}>Quick Login with SMS OTP</Button>
           <View style={styles.registerRow}>

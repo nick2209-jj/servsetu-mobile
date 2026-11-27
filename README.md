@@ -54,3 +54,17 @@ npm install
 
 # Start the Expo development server
 npx expo start
+```
+
+### Local UI test accounts
+
+The mobile app currently has no backend, so these accounts are stored locally in the demo app and are only for testing the customer and technician screens. On the sign-in screen, select an account to fill in its credentials, then tap **Sign In**.
+
+| Role | Mobile | Password |
+| --- | --- | --- |
+| Customer — Priya Shah | 9000000001 | `Customer@123` |
+| Customer — Amit Verma | 9000000002 | `Customer@456` |
+| Technician — Ramesh Patel | 9000000003 | `Tech@1234` |
+| Technician — Imran Shaikh | 9000000004 | `Tech@5678` |
+
+These are not real user accounts and cannot be used with a server.
